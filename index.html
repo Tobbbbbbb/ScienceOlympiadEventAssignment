@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Among</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.0/full/pyodide.js"></script>
+  </head>
+  <body>
+    <h1>Science Olympiad Team Creator</h1>
+    <p>In order to use this program, five data files are needed.</p>
+    <h3>Form Output File</h3>
+    <p>
+      The first data file should be the form output from the Science Olympiad Event Selection form.
+      This should be a copy of the form from last year, where the only changed fields are the previous classes, current classes, and events.
+      An example form can be found below.
+      While this form does ask for everyone to rank their top 17 events, if a team can be made considering only their first N event choices, the program will do so.
+    </p>
+    <a href="https://forms.gle/Sq5wqEYfNgDa3geU9">
+      Science Olympiad Event Selection Form Example
+    </a>
+    <h3>Class Data File</h3>
+    <p>
+      The second data file should be a csv containing info about each class offered or previously offered at LFA.
+      The first column should be the class name, as shown in the Science Olympiad form.
+      The second column should be the weight of the class (1 for regular/advanced classes and 2 for AP or PAP classes).
+      The third column should list what subjects are related to the class among Phys (physics), Chem, Bio, and Env (environmental).
+      If there are multiple subjects, make sure to put quotations around them and separate them using a comma and a space.
+      All subjects should be capitalized.
+    </p>
+    <h3>Event Data File</h3>
+    <p>
+      The third data file should be a csv containing info about the events.
+      The first column should be the event name, as it appears in the Science Olympiad form.
+      The second column should be the number of people in each event.
+      The third column should be the letter of the block the event happens (i.e. put A for A block).
+      If it's a self-schedule event, use X as the block.
+      The fourth column should list what subjects are related to the event among Phys (physics), Chem, Bio, Env (environmental), and Any, if the event does not directly correlate to a specific science (things like WIDI and Codebusters fall in this category).
+      If there are multiple subjects, make sure to put quotations around them and separate them using a comma and a space.
+      All subjects should be capitalized.
+    </p>
+    <h3>Extracurricular Data File</h3>
+    <p>
+      The fourth data file should be a csv containing the names of any extracurriculars offered.
+      If there is a comma in any of the names, stop the names right before the comma.
+    </p>
+    <h3>Varsity Data File</h3>
+    <p>
+      The fifth data file should be a csv containing the emails of the varsity members.
+      This does not have to be a definitive list, but it's used to get a good prediction of the varsity team for next year, based on who has been reliable in previous years.
+      You can submit more than 15 names, but the team will be more inaccurate the more names you put down.
+      If you simply want to create one large team, run the program, but submit an empty file for the varsity field 
+    </p>
+    <h3>Output</h3>
+    <p>
+      Output will be given as a CSV which you can copy and paste into excel or sheets.
+      It is separated into two sections - the varsity output (which will be at the top)
+      and the junior varsity output (which will be at the bottom)
+    </p>
+    <label>Input Data:</label>
+    <input type="file" id="formOutput" accept=".csv" />
+    <br/>
+    <label>Input Classes:</label>
+    <input type="file" id="classes" accept=".csv" />
+    <br/>
+    <label>Input Events:</label>
+    <input type="file" id="events" accept=".csv" />
+    <br/>
+    <label>Input Extracurriculars:</label>
+    <input type="file" id="extraCurriculars" accept=".csv" />
+    <br/>
+    <label>Input Varsity:</label>
+    <input type="file" id="varsity" accept=".csv" />
+    <br/>
+    <button onclick="executePython()">Submit</button>
+    
+    <div id="output" style="white-space:pre">Output will appear here when complete. This may take a few seconds</div>
+
+    <py-config>
+      [[fetch]]
+      files = ["./nodes.py"]
+    </py-config>
+    <py-script src="./SciOly.py">
+    </py-script>
+    <script>
+      function getCsv(id) {
+        var file = document.getElementById(id).files[0];
+        const reader = new FileReader();
+        return new Promise((resolve, reject) => {
+          reader.onload = async function() {
+            console.log(reader.result);
+            toReturn = resolve(reader.result);
+          };
+          reader.onerror = async function() {
+            reject(new DOMException("Problem parsing input file."));
+          };
+          reader.readAsText(file);
+        });
+      }
+      async function executePython() {
+        data = await getCsv('formOutput');
+        classes = await getCsv('classes');
+        events = await getCsv('events');
+        ecs = await getCsv('extraCurriculars');
+        varsity = await getCsv('varsity');
+        main = await pyscript.interpreter.globals.get('main');
+        info = main(data, classes, events, ecs, varsity);
+        document.getElementById("output").innerHTML = "processing";
+        document.getElementById("output").innerHTML = "Results: \n" + info;
+      }
+    </script> 
+  </body>
+</html>
