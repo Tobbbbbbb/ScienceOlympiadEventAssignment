@@ -983,6 +983,7 @@ def output(people, events, isVarsity):
 # This function was used back when I ran the program through the terminal
 # I now use the above function
 def returnOutput(people, events, varsity):
+    varsity += "\n"
     for evnt in events:
         varsity += evnt.getName() + ","
         varsity += stringifyEmails(people, evnt.getPeople())
